@@ -28,6 +28,7 @@ plotRGB(l1992, 1, 2, 3, stretch = "Lin")
 # Calculate DVI for 1992
 dvi1992 = l1992[[1]] - l1992[[2]]  # NIR - red
 dvi1992
+dev.off()
 
 # Plot the DVI
 cl <- colorRampPalette(c("darkblue", "yellow", "red", "black"))(100)
