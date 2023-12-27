@@ -1,5 +1,6 @@
 # COPERNICUS: downloading and visualizing data of Earth Observation
 
+install.packages("ncdf4")
 # Load the required packages
 library(ncdf4)
 library(raster)
