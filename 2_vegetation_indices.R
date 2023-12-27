@@ -4,7 +4,8 @@
 library(raster)
 
 # Set the working directory in Windows
-setwd("C:/lab/data")
+setwd("C:/lab")
+getwd()
 
 
 # IMAGE FROM 1992 ----
