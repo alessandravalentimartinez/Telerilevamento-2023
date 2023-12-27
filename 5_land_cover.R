@@ -6,7 +6,7 @@ library(ggplot2) # for ggplot graphs
 library(patchwork) # to combine separate ggplots into the same graphic
 
 # Set the working directory in Windows
-setwd("C:/lab/data")
+setwd("C:/lab")
 
 
 # Load the data about deforestation
