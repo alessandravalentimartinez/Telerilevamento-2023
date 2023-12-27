@@ -51,7 +51,7 @@ plot(preds$vegetation)  # vegetation
 # remember: we don't like this kind of palette -> from blue to red
 
 # Colours palette
-cl <- colorRampPalette(c('lightyellow', 'yellow','orange', 'darkorange','darkred')) (100)
+cl <- colorRampPalette(c('cadetblue1', 'cyan3','darkcyan', 'blue3','darkblue')) (100)
 plot(preds, col = cl)
 
 # Plot predictors and occurrences together
