@@ -4,7 +4,7 @@
 library(raster)
 
 # Set the working directory in Windows
-setwd("C:/lab/data")
+setwd("C:/lab")
 
 
 # Image of the sun ----
