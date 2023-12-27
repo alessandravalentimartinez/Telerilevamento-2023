@@ -174,6 +174,7 @@ plotRGB(l1988, 4, 3, 2, stretch = "Lin")
 plotRGB(l2011, 4, 3, 2, stretch = "Lin")
 
 dev.off()
+
 plotRGB(l1988, 4, 3, 2, stretch = "Hist")  # histogram stretch
 
 # Multiframe with 4 images
