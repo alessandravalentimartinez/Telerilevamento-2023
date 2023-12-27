@@ -2,10 +2,13 @@
 
 # Data and code from Emanuela Cosma
 
+#Install the required package
+install.packages("rasterVis")
+
 # Load the required packages
 library(raster)
 library(rasterVis)
-library(rgdal)
+
 
 
 # 1 - Greenland increase of temperature ----
