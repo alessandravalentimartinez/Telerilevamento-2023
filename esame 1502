@@ -6,16 +6,16 @@
 
 
 # First of all, we open the packages from our library:
-library(ncdf4) 
+library(ncdf4) #for reading RasterLayer variables
 library(raster) #needed for work with raster file
 library(ggplot2) #needed for create graphics
 library(RStoolbox) #needed for remote sensing image processing
 library(viridis) #needed for plot the color palette
 library(patchwork) #needed for multiframe graphics
-library(sp)
+library(sp) #for work with geospatial data
 library(sf)
 library(tidyverse)
-library(terra)
+library(terra) #analysis of raster and vector spatial data
 
 
 # Now we set our working directory:
