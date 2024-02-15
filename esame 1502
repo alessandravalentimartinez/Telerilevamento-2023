@@ -7,11 +7,11 @@
 
 # First of all, we open the packages from our library:
 library(ncdf4) 
-library(raster) 
-library(ggplot2) 
-library(RStoolbox) 
-library(viridis) 
-library(patchwork) 
+library(raster) #needed for work with raster file
+library(ggplot2) #needed for create graphics
+library(RStoolbox) #needed for remote sensing image processing
+library(viridis) #needed for plot the color palette
+library(patchwork) #needed for multiframe graphics
 library(sp)
 library(sf)
 library(tidyverse)
