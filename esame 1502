@@ -15,6 +15,7 @@ library(patchwork) #needed for multiframe graphics
 library(sp) #for work with geospatial data
 library(sf)
 library(tidyverse)
+library(tidyterra)
 library(terra) #analysis of raster and vector spatial data
 
 
@@ -106,6 +107,98 @@ plotRGB(img_2023, 3, 2, 1, stretch = "Lin") # natural colours
 dev.off()
 
 ########################################################################
+# NDVI 
+#Calculate NDVI
+#is an indicator of the greenness of the biomes
+#NDVI = (REF_nir – REF_red)/(REF_nir + REF_red)
+#where REF_nir and REF_red are the spectral reflectances 
+#measured in the near infrared and red wavebands respectively
+# We get the data from Copernicus
+
+ndvi2020 <- rast("ndvi2020.nc")
+ndvi2021 <- rast("ndvi2021.nc")
+ndvi2022 <- rast("ndvi2022.nc")
+ndvi2023 <- rast("ndvi2023.nc")
+
+
+# Now let's crop the data to only look at our area
+new_ext <- c (-18.0106, -17.7140, 28.4404, 28.8565)
+ndvi2020_newext <- crop(ndvi2020, new_ext)
+ndvi2021_newext <- crop(ndvi2021, new_ext)
+ndvi2022_newext <- crop(ndvi2022, new_ext)
+ndvi2023_newext <- crop(ndvi2023, new_ext)
+
+#Let's take a look at our data:
+ndvi2020_newext
+ndvi2021_newext
+ndvi2022_newext
+ndvi2023_newext
+
+
+# Now let's plot the graphs
+
+#2020
+ndvi2020_gg <-ggplot() + 
+  geom_raster(ndvi2020_newext, mapping = aes(x=x,  y = y, fill = NDVI)) +
+  scale_fill_viridis(option = "magma") +
+  ggtitle("2020 NDVI")
+
+
+#Let's add the legend
+ndvi2020_gg <- ndvi2020_gg + labs(fill= "NDVI")
+ndvi2020_gg
+
+#Let's save the new plot
+ggsave(filename= "ndvi2020.png", plot = ndvi2020_gg)
+
+
+#2021
+ndvi2021_gg <-ggplot() + 
+  geom_raster(ndvi2021_newext, mapping = aes(x=x,  y = y, fill = NDVI)) +
+  scale_fill_viridis(option = "magma") +
+  ggtitle("2021 NDVI")
+
+
+#Let's add the legend
+ndvi2021_gg <- ndvi2021_gg + labs(fill= "NDVI")
+ndvi2021_gg
+
+#Let's save the new plot
+ggsave(filename= "ndvi2021.png", plot = ndvi2021_gg)
+
+#2022
+ndvi2022_gg <-ggplot() + 
+  geom_raster(ndvi2022_newext, mapping = aes(x=x,  y = y, fill = NDVI)) +
+  scale_fill_viridis(option = "magma") +
+  ggtitle("2022 NDVI")
+
+
+#Let's add the legend
+ndvi2022_gg <- ndvi2022_gg + labs(fill= "NDVI")
+ndvi2022_gg
+
+#Let's save the new plot
+ggsave(filename= "ndvi2022.png", plot = ndvi2022_gg)
+
+
+#2023
+ndvi2023_gg <-ggplot() + 
+  geom_raster(ndvi2023_newext, mapping = aes(x=x,  y = y, fill = NDVI)) +
+  scale_fill_viridis(option = "magma") +
+  ggtitle("2023 NDVI")
+
+
+#Let's add the legend
+ndvi2023_gg <- ndvi2023_gg + labs(fill= "NDVI")
+ndvi2023_gg
+
+#Let's save the new plot
+ggsave(filename= "ndvi2023.png", plot = ndvi2023_gg)
+
+# Now let's look at the temporal difference between 2020-2023
+
+
+########################################################################
 # FCOVER
 
 # Calculate FCOVER
@@ -132,9 +225,9 @@ fcover2020_newext
 
 #2020
 fcover2020_gg <-ggplot() + 
-    geom_raster(fcover2020_newext, mapping = aes(x=x,  y = y, fill = FCOVER)) +
-    scale_fill_viridis(option = "magma") +
-    ggtitle("2020 fcover")
+  geom_raster(fcover2020_newext, mapping = aes(x=x,  y = y, fill = FCOVER)) +
+  scale_fill_viridis(option = "magma") +
+  ggtitle("2020 fcover")
 
 
 #Let's add the legend
@@ -330,8 +423,13 @@ plot(laistacked_newext)
 
 # Now let's look at the difference between 2023 and 2020
 lai_difference <- laistacked_newext[[4]]-laistacked_newext[[1]]
+laidifference_df <-  as.data.frame(lai_difference, xy = TRUE)
 
-laidifference_plot <- ggplot() + geom_raster(lai_difference, mapping=aes(x=x, y=y, fill= )) + scale_fill_viridis(option="rocket") + ggtitle("LAI difference")
+laidifference_plot <-ggplot() + 
+  geom_raster(laidifference_df, mapping = aes(x=x,  y = y, fill = layer)) +
+  scale_fill_viridis(option = "rocket") +
+  ggtitle("LAI difference")
+
 laidifference_plot
 
 # Let's look at the graphical representation of the trend of LAI between 2020 and 2023
