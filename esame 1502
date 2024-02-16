@@ -106,6 +106,8 @@ plotRGB(img_2023, 3, 2, 1, stretch = "Lin") # natural colours
 
 dev.off()
 
+
+
 ########################################################################
 # NDVI 
 #Calculate NDVI
@@ -195,7 +197,51 @@ ndvi2023_gg
 #Let's save the new plot
 ggsave(filename= "ndvi2023.png", plot = ndvi2023_gg)
 
+
+
 # Now let's look at the temporal difference between 2020-2023
+rlist <- list.files(pattern="ndvi") #make a list of the files that start with "ndvi"
+rlist 
+
+#lapply takes the list and applies any function you want
+# use the lapply function to the list
+
+import <- lapply(rlist, raster) # specify the list and the function to import the data
+import 
+
+# Let's stack the data:
+ndvistacked <- stack(import)
+ndvistacked
+
+lapalma_ndvistacked <- crop(ndvistacked, new_ext)
+lapalma_ndvistacked
+
+plot(lapalma_ndvistacked)
+
+
+# Now let's look at the difference between the NDVI in 2020 and in 2021
+
+ndvi_difference <- lapalma_ndvistacked[[2]]-lapalma_ndvistacked[[1]]
+
+ndvidifference_c <- crop(ndvi_difference, new_ext)
+ndvidifference_c <- brick(ndvidifference_c)
+ndvidifference_c1 <- ndvidifference_c; ndvidifference_c1[ndvidifference_c1 == 0] <- NA # set all values that equal zero to NA
+ndvidifference_c2 <- as.data.frame(ndvidifference_c1, xy=TRUE)
+
+ndvidifference_plot <-ggplot() + 
+  geom_raster(ndvidifference_c2, mapping = aes(x=x,  y = y, fill = layer)) +
+  scale_fill_viridis(option = "rocket") +
+  ggtitle("NDVI difference")
+
+ndvidifference_plot
+
+ggsave(filename = "NDVI_difference.png" , plot = ndvidifference_plot)
+
+
+# Let's look at a graphical representation of the trend of NDVI between 2019 and 2020
+
+ndvitrend <- plot(ndvi2020_newext, ndvi2020_newext, xlab="NDVI 2020", ylab="NDVI 2020", main="Trend of NDVI")
+abline(0,1, col="red")
 
 
 ########################################################################
