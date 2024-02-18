@@ -2,19 +2,21 @@
 #Alessandra Valenti Martinez
 
 #The goal of this project is to observed how the vegetation cover changed before and after the volcanic eruption 
-# occured in La Palma Island in 2021
+#occured in the Santa Cruz de la Palma Island in 2021
 
 
 # First of all, we open the packages from our library:
-library(ncdf4) 
-library(raster) 
-library(ggplot2) 
-library(RStoolbox) 
-library(viridis) 
-library(patchwork) 
-library(sp)
+library(ncdf4) #for reading RasterLayer variables
+library(raster) #needed for work with raster file
+library(ggplot2) #needed for create graphics
+library(RStoolbox) #needed for remote sensing image processing
+library(viridis) #needed for plot the color palette
+library(patchwork) #needed for multiframe graphics
+library(sp) #for work with geospatial data
 library(sf)
 library(tidyverse)
+library(tidyterra)
+library(terra) #analysis of raster and vector spatial data
 
 
 # Now we set our working directory:
@@ -46,7 +48,7 @@ plotRGB(img_2020_raw, 3, 2, 1, stretch = "Lin") # natural colours
 
 dev.off()
 
-# Find the right coordinates to crop all the images of Sicily
+# Find the right coordinates to crop all the images 
 plot(img_2020_raw[[3]])
 img_2020_raw
 
@@ -104,6 +106,168 @@ plotRGB(img_2023, 3, 2, 1, stretch = "Lin") # natural colours
 
 dev.off()
 
+
+
+########################################################################
+# NDVI 
+#Calculate NDVI
+#is an indicator of the greenness of the biomes
+#NDVI = (REF_nir – REF_red)/(REF_nir + REF_red)
+#where REF_nir and REF_red are the spectral reflectances 
+#measured in the near infrared and red wavebands respectively
+# We get the data from Copernicus
+
+ndvi2020 <- rast("ndvi2020.nc")
+ndvi2021 <- rast("ndvi2021.nc")
+ndvi2022 <- rast("ndvi2022.nc")
+ndvi2023 <- rast("ndvi2023.nc")
+
+
+# Now let's crop the data to only look at our area
+new_ext <- c (-18.0106, -17.7140, 28.4404, 28.8565)
+ndvi2020_newext <- crop(ndvi2020, new_ext)
+ndvi2021_newext <- crop(ndvi2021, new_ext)
+ndvi2022_newext <- crop(ndvi2022, new_ext)
+ndvi2023_newext <- crop(ndvi2023, new_ext)
+
+#Let's take a look at our data:
+ndvi2020_newext
+ndvi2021_newext
+ndvi2022_newext
+ndvi2023_newext
+
+
+plotRGB(ndvistacked, 4, 3, 2, stretch = "Lin") # NIR
+plotRGB(ndvistacked, 3, 2, 1, stretch = "Lin") # natural colours
+
+
+
+# Now let's plot the graphs
+
+#2020
+ndvi2020_gg <-ggplot() + 
+  geom_raster(ndvi2020_newext, mapping = aes(x=x,  y = y, fill = NDVI)) +
+  scale_fill_viridis(option = "magma") +
+  ggtitle("2020 NDVI")
+
+
+#Let's add the legend
+ndvi2020_gg <- ndvi2020_gg + labs(fill= "NDVI")
+ndvi2020_gg
+
+#Let's save the new plot
+ggsave(filename= "ndvi2020.png", plot = ndvi2020_gg)
+
+
+#2021
+ndvi2021_gg <-ggplot() + 
+  geom_raster(ndvi2021_newext, mapping = aes(x=x,  y = y, fill = NDVI)) +
+  scale_fill_viridis(option = "magma") +
+  ggtitle("2021 NDVI")
+
+
+#Let's add the legend
+ndvi2021_gg <- ndvi2021_gg + labs(fill= "NDVI")
+ndvi2021_gg
+
+#Let's save the new plot
+ggsave(filename= "ndvi2021.png", plot = ndvi2021_gg)
+
+#2022
+ndvi2022_gg <-ggplot() + 
+  geom_raster(ndvi2022_newext, mapping = aes(x=x,  y = y, fill = NDVI)) +
+  scale_fill_viridis(option = "magma") +
+  ggtitle("2022 NDVI")
+
+
+#Let's add the legend
+ndvi2022_gg <- ndvi2022_gg + labs(fill= "NDVI")
+ndvi2022_gg
+
+#Let's save the new plot
+ggsave(filename= "ndvi2022.png", plot = ndvi2022_gg)
+
+
+#2023
+ndvi2023_gg <-ggplot() + 
+  geom_raster(ndvi2023_newext, mapping = aes(x=x,  y = y, fill = NDVI)) +
+  scale_fill_viridis(option = "magma") +
+  ggtitle("2023 NDVI")
+
+
+#Let's add the legend
+ndvi2023_gg <- ndvi2023_gg + labs(fill= "NDVI")
+ndvi2023_gg
+
+#Let's save the new plot
+ggsave(filename= "ndvi2023.png", plot = ndvi2023_gg)
+
+
+
+# Now let's look at the temporal difference between 2020-2023
+rlist <- list.files(pattern="ndvi") #make a list of the files that start with "ndvi"
+rlist 
+
+#lapply takes the list and applies any function you want
+# use the lapply function to the list
+
+import <- lapply(rlist, raster) # specify the list and the function to import the data
+import 
+
+# Let's stack the data, all the four layers in a single file:
+ndvistacked <- stack(import)
+ndvistacked
+
+# Replace values higher than 0.93 with NA
+lapalma_ndvistacked[lapalma_ndvistacked > 0.93] <- NA
+
+plot(lapalma_ndvistacked)
+
+
+# Now let's look at the difference between the NDVI in 2020 and in 2023
+
+ndvidifference2023_raw <- lapalma_ndvistacked[[4]]-lapalma_ndvistacked[[1]]
+
+# Set all values that equal zero to NA
+ndvidifference2023_ <- ndvidifference2023_raw; ndvidifference2023_[ndvidifference2023_ == 0] <- NA 
+ndvidifference2023 <- as.data.frame(ndvidifference_c1, xy=TRUE)
+
+
+ndvidifference2023_plot <-ggplot() + 
+  geom_raster(ndvidifference2023, mapping = aes(x=x,  y = y, fill = layer)) +
+  scale_fill_viridis(option = "rocket") +
+  ggtitle("NDVI difference between 2020 2023")
+
+ndvidifference2023_plot
+
+ggsave(filename = "NDVI_difference2023.png" , plot = ndvidifference_plot)
+
+
+# Now let's look at the difference between the NDVI in 2021 and in 2022
+ndvidifference2122_raw <- lapalma_ndvistacked[[3]]-lapalma_ndvistacked[[2]]
+
+# Set all values that equal zero to NA
+ndvidifference2122 <- ndvidifference2122_raw; ndvidifference2122[ndvidifference2122 == 0] <- NA 
+
+
+
+ndvidifference2122_plot <-ggplot() + 
+  geom_raster(ndvidifference2122, mapping = aes(x=x,  y = y, fill = layer)) +
+  scale_fill_viridis(option = "rocket") +
+  ggtitle("NDVI difference between 2020 2023")
+
+ndvidifference2122_plot
+
+ggsave(filename = "NDVI_difference2023.png" , plot = ndvidifference_plot)
+
+
+# Let's look at a graphical representation of the trend of NDVI between 2020 and 2023
+
+ndvitrend <- plot(ndvi2023_newext, ndvi2020_newext, xlab="NDVI 2023", ylab="NDVI 2020", main="Trend of NDVI")
+abline(0,1, col="red")
+ndvitrend
+
+
 ########################################################################
 # FCOVER
 
@@ -112,27 +276,32 @@ dev.off()
 # range from 0 to +1
 # We get the data from Copernicus
 
-fcover2020 <- raster("fcover2020.nc")
-fcover2021 <- raster("fcover2021.nc")
-fcover2022 <- raster("fcover2022.nc")
-fcover2023 <- raster("fcover2023.nc")
+fcover2020 <- rast ("fcover2020.nc")
+fcover2021 <- rast ("fcover2021.nc")
+fcover2022 <- rast ("fcover2022.nc")
+fcover2023 <- rast ("fcover2023.nc")
+
 
 # Now let's crop the data to only look at our area
-new_ext <- c(205000, 236000, 3150000, 3195000)
+new_ext <- c (-18.0106, -17.7140, 28.4404, 28.8565)
 fcover2020_newext <- crop(fcover2020, new_ext)
 fcover2021_newext <- crop(fcover2021, new_ext)
 fcover2022_newext <- crop(fcover2022, new_ext)
 fcover2023_newext <- crop(fcover2023, new_ext)
 
+fcover2020_newext
+
 # Now let's plot the graphs
+
 #2020
-fcover2020_gg <- ggplot(fcover2020_newext, aes(x = x, y = y, fill = )) +
-  geom_raster() +
+fcover2020_gg <-ggplot() + 
+  geom_raster(fcover2020_newext, mapping = aes(x=x,  y = y, fill = FCOVER)) +
   scale_fill_viridis(option = "magma") +
   ggtitle("2020 fcover")
 
+
 #Let's add the legend
-fcover2020_gg <- fcover2020_ngg + labs(fill= "fcover")
+fcover2020_gg <- fcover2020_gg + labs(fill= "fcover")
 fcover2020_gg
 
 #Let's save the new plot
@@ -140,39 +309,39 @@ ggsave(filename= "fcover2020.png", plot = fcover2020_gg)
 
 #Now let's repeat for the other years
 #2021
-fcover2021_gg <- ggplot(fcover2021_newext, aes(x = x, y = y, fill = )) +
-  geom_raster() +
+fcover2021_gg <-ggplot() + 
+  geom_raster(fcover2021_newext, mapping = aes(x=x,  y = y, fill = FCOVER)) +
   scale_fill_viridis(option = "magma") +
-  ggtitle("2021 fcover")
+  ggtitle("2021 fcover") 
 
 #Let's add the legend
-fcover2021_gg <- fcover2021_ngg + labs(fill= "fcover")
+fcover2021_gg <- fcover2021_gg + labs(fill= "fcover")
 fcover2021_gg
 
 #Let's save the new plot
 ggsave(filename= "fcover2021.png", plot = fcover2021_gg)
 
 #2022
-fcover2022_gg <- ggplot(fcover2022_newext, aes(x = x, y = y, fill = )) +
-  geom_raster() +
+fcover2022_gg <-ggplot() + 
+  geom_raster(fcover2022_newext, mapping = aes(x=x,  y = y, fill = FCOVER)) +
   scale_fill_viridis(option = "magma") +
   ggtitle("2022 fcover")
 
 #Let's add the legend
-fcover2022_gg <- fcover2022_ngg + labs(fill= "fcover")
+fcover2022_gg <- fcover2022_gg + labs(fill= "fcover")
 fcover2022_gg
 
 #Let's save the new plot
 ggsave(filename= "fcover2022.png", plot = fcover2022_gg)
 
 #2023
-fcover2023_gg <- ggplot(fcover2023_newext, aes(x = x, y = y, fill = )) +
-  geom_raster() +
+fcover2023_gg <-ggplot() + 
+  geom_raster(fcover2023_newext, mapping = aes(x=x,  y = y, fill = FCOVER)) +
   scale_fill_viridis(option = "magma") +
   ggtitle("2023 fcover")
 
 #Let's add the legend
-fcover2023_gg <- fcover2023_ngg + labs(fill= "fcover")
+fcover2023_gg <- fcover2023_gg + labs(fill= "fcover")
 fcover2023_gg
 
 #Let's save the new plot
@@ -187,11 +356,12 @@ ggsave(filename = "fcover_comparison.png", plot = fcover_comparison)
 ###################################################################################
 
 # Now let's look at the temporal difference between 2020-2023
-rlist <- list.files(pattern= "fcover2")
+rlist <- list.files(pattern= "fcover")
 rlist 
 
 import <- lapply(rlist, raster)
 import
+
 
 # Let's stack the data:
 fcoverstacked <- stack(import)
@@ -205,8 +375,14 @@ plot(fcoverstacked_newext)
 
 #Now let's look at the difference between 2023 and 2020
 fcover_difference <- fcoverstacked_newext[[4]]-fcoverstacked_newext[[1]]
+fcover_difference
+fcover_difference_df <- as.data.frame(fcover_difference, xy = TRUE)
 
-fcoverdifference_plot <- ggplot() + geom_raster(fcover_difference, mapping=aes(x=x, y=y, fill= )) + scale_fill_viridis(option="rocket") + ggtitle("NDVI difference")
+fcoverdifference_plot <-ggplot() + 
+  geom_raster(fcover_difference_df, mapping = aes(x=x,  y = y, fill = layer)) +
+  scale_fill_viridis(option = "magma") +
+  ggtitle("Difference in Fraction of Green Vegetation Cover") 
+
 fcoverdifference_plot
 
 
@@ -222,24 +398,26 @@ abline(0,1, col="red")
 # range from 0 to +∞
 # We get the data from Copernicus
 
-lai_2020 <- raster("lai_2020.nc")
-lai_2021 <- raster("lai_2021.nc")
-lai_2022 <- raster("lai_2022.nc")
-lai_2023 <- raster("lai_2023.nc")
+lai_2020 <- rast ("lai_2020.nc")
+lai_2021 <- rast ("lai_2021.nc")
+lai_2022 <- rast ("lai_2022.nc")
+lai_2023 <- rast ("lai_2023.nc")
 
 # Now let's crop the data to only look at our area
-new_ext <- c(205000, 236000, 3150000, 3195000)
+new_ext <- c (-18.0106, -17.7140, 28.4404, 28.8565)
 lai_2020_newext <- crop(lai_2020, new_ext)
 lai_2021_newext <- crop(lai_2021, new_ext)
 lai_2022_newext <- crop(lai_2022, new_ext)
 lai_2023_newext <- crop(lai_2023, new_ext)
 
+
 # Now let's plot the graphs
 #2020
-lai_2020_gg <- ggplot(lai_2020_newext, aes(x = x, y = y, fill = layer)) +
-  geom_raster() +
+lai_2020_gg <-ggplot() + 
+  geom_raster(lai_2020_newext, mapping = aes(x=x,  y = y, fill = LAI )) +
   scale_fill_viridis(option = "magma") +
-  ggtitle("2020 LAI")
+  ggtitle("2020 LAI") 
+
 
 # Let's add the legend
 lai_2020_gg <- lai_2020_gg + labs(fill= "LAI")
@@ -250,10 +428,10 @@ ggsave(filename= "lai_2020.png", plot = lai_2020_gg)
 
 # Now let's repeat for the other years
 #2021
-lai_2021_gg <- ggplot(lai_2021_newext, aes(x = x, y = y, fill = layer)) +
-  geom_raster() +
+lai_2021_gg <-ggplot() + 
+  geom_raster(lai_2021_newext, mapping = aes(x=x,  y = y, fill = LAI )) +
   scale_fill_viridis(option = "magma") +
-  ggtitle("2021 LAI")
+  ggtitle("2021 LAI") 
 
 # Let's add the legend
 lai_2021_gg <- lai_2021_gg + labs(fill= "LAI")
@@ -263,10 +441,10 @@ lai_2021_gg
 ggsave(filename= "lai_2021.png", plot = lai_2021_gg)
 
 #2022
-lai_2022_gg <- ggplot(lai_2022_newext, aes(x = x, y = y, fill = layer)) +
-  geom_raster() +
+lai_2022_gg <-ggplot() + 
+  geom_raster(lai_2022_newext, mapping = aes(x=x,  y = y, fill = LAI )) +
   scale_fill_viridis(option = "magma") +
-  ggtitle("2022 LAI")
+  ggtitle("2022 LAI") 
 
 # Let's add the legend
 lai_2022_gg <- lai_2022_gg + labs(fill= "LAI")
@@ -276,10 +454,10 @@ lai_2022_gg
 ggsave(filename= "lai_2022.png", plot = lai_2022_gg)
 
 #2023
-lai_2023_gg <- ggplot(lai_2023_newext, aes(x = x, y = y, fill = layer)) +
-  geom_raster() +
+lai_2023_gg <-ggplot() + 
+  geom_raster(lai_2023_newext, mapping = aes(x=x,  y = y, fill = LAI )) +
   scale_fill_viridis(option = "magma") +
-  ggtitle("2023 LAI")
+  ggtitle("2023 LAI") 
 
 # Let's add the legend
 lai_2023_gg <- lai_2023_gg + labs(fill= "LAI")
@@ -315,10 +493,15 @@ plot(laistacked_newext)
 
 # Now let's look at the difference between 2023 and 2020
 lai_difference <- laistacked_newext[[4]]-laistacked_newext[[1]]
+laidifference_df <-  as.data.frame(lai_difference, xy = TRUE)
 
-laidifference_plot <- ggplot() + geom_raster(lai_difference, mapping=aes(x=x, y=y, fill= )) + scale_fill_viridis(option="rocket") + ggtitle("LAI difference")
+laidifference_plot <-ggplot() + 
+  geom_raster(laidifference_df, mapping = aes(x=x,  y = y, fill = layer)) +
+  scale_fill_viridis(option = "rocket") +
+  ggtitle("LAI difference")
+
 laidifference_plot
-
+dev.off()
 # Let's look at the graphical representation of the trend of LAI between 2020 and 2023
 lai_trend <- plot(lai_2020_newext, lai_2023_newext, xlab="LAI 2020", ylab="LAI 2023", main="Trend of LAI")
 abline(0,1, col="red")
@@ -327,21 +510,23 @@ abline(0,1, col="red")
 # Finally, let's look at the correlation trend between LAI and FCOVER for all years:
 
 # 2020
-trend2020 <- plot(fcover2020_newext, lai2020_newext, xlab="FCOVER 2020", ylab="LAI 2020", main="2020 trend")
+trend2020 <- plot(fcover2020_newext, lai_2020_newext, xlab="FCOVER 2020", ylab="LAI 2020", main="2020 trend")
 abline(0,1, col="red")
 
 # 2021
-trend2021 <- plot(fcover2021_newext, lai2021_newext, xlab="FCOVER 2021", ylab="LAI 2021", main="2021 trend")
+trend2021 <- plot(fcover2021_newext, lai_2021_newext, xlab="FCOVER 2021", ylab="LAI 2021", main="2021 trend")
 abline(0,1, col="red")
 
 # 2022
-trend2022 <- plot(fcover2022_newext, lai2022_newext, xlab="FCOVER 2022", ylab="LAI 2022", main="2022 trend")
+trend2022 <- plot(fcover2022_newext, lai_2022_newext, xlab="FCOVER 2022", ylab="LAI 2022", main="2022 trend")
 abline(0,1, col="red")
 
 # 2023
-trend2023 <- plot(fcover2023_newext, lai2023_newext, xlab="FCOVER 2023", ylab="LAI 2023", main="2023 trend")
+trend2023 <- plot(fcover2023_newext, lai_2023_newext, xlab="FCOVER 2023", ylab="LAI 2023", main="2023 trend")
 abline(0,1, col="red")
 
 # Difference
 trend3 <- plot(fcover_difference, lai_difference, xlab="FCOVER difference", ylab="LAI difference", main="Difference trend")
 abline(0,1, col="red")
+
+
