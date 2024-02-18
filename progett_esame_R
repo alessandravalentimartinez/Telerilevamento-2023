@@ -49,10 +49,6 @@ plotRGB(img_2020_raw, 3, 2, 1, stretch = "Lin") # natural colours
 dev.off()
 
 # Find the right coordinates to crop all the images 
-plot(img_2020_raw[[3]])
-img_2020_raw
-
-# New coordinates
 new_ext <- c(205000, 236000, 3150000, 3195000)
 
 # Let's crop the image for the new coordinations
@@ -66,10 +62,6 @@ plot(img_2020, main = "2020 IMAGE")
 par(mfrow = c(1,2))
 plotRGB(img_2020, 4, 3, 2, stretch = "Lin") # NIR
 plotRGB(img_2020, 3, 2, 1, stretch = "Lin") # natural colours
-
-img_2020
-
-install.packages("RStoolbox")
 
 # Other images: 2021-2023
 
@@ -137,12 +129,8 @@ ndvi2022_newext
 ndvi2023_newext
 
 
-plotRGB(ndvistacked, 4, 3, 2, stretch = "Lin") # NIR
-plotRGB(ndvistacked, 3, 2, 1, stretch = "Lin") # natural colours
 
-
-
-# Now let's plot the graphs
+### Now let's plot the graphs
 
 #2020
 ndvi2020_gg <-ggplot() + 
@@ -202,9 +190,20 @@ ndvi2023_gg
 #Let's save the new plot
 ggsave(filename= "ndvi2023.png", plot = ndvi2023_gg)
 
+library(gridExtra)
+
+# Supponiamo che tu abbia quattro ggplot: plot1, plot2, plot3 e plot4
+
+# Disponi i ggplot in una griglia 2x2
+combined_plot <- grid.arrange(ndvi2020_gg, ndvi2021_gg, ndvi2022_gg, ndvi2023_gg, ncol = 2)
+
+# Visualizza la griglia combinata
+print(combined_plot)
+ggsave(filename = "NDVIcombinato.png" , plot = combined_plot)
 
 
-# Now let's look at the temporal difference between 2020-2023
+### Now let's look at the temporal difference between 2020-2023
+
 rlist <- list.files(pattern="ndvi") #make a list of the files that start with "ndvi"
 rlist 
 
@@ -216,12 +215,15 @@ import
 
 # Let's stack the data, all the four layers in a single file:
 ndvistacked <- stack(import)
-ndvistacked
+
+lapalma_ndvistacked <- crop(ndvistacked, new_ext)
+lapalma_ndvistacked
 
 # Replace values higher than 0.93 with NA
 lapalma_ndvistacked[lapalma_ndvistacked > 0.93] <- NA
-
+lapalma_ndvistacked
 plot(lapalma_ndvistacked)
+
 
 
 # Now let's look at the difference between the NDVI in 2020 and in 2023
@@ -509,21 +511,6 @@ abline(0,1, col="red")
 ###################################################################################
 # Finally, let's look at the correlation trend between LAI and FCOVER for all years:
 
-# 2020
-trend2020 <- plot(fcover2020_newext, lai_2020_newext, xlab="FCOVER 2020", ylab="LAI 2020", main="2020 trend")
-abline(0,1, col="red")
-
-# 2021
-trend2021 <- plot(fcover2021_newext, lai_2021_newext, xlab="FCOVER 2021", ylab="LAI 2021", main="2021 trend")
-abline(0,1, col="red")
-
-# 2022
-trend2022 <- plot(fcover2022_newext, lai_2022_newext, xlab="FCOVER 2022", ylab="LAI 2022", main="2022 trend")
-abline(0,1, col="red")
-
-# 2023
-trend2023 <- plot(fcover2023_newext, lai_2023_newext, xlab="FCOVER 2023", ylab="LAI 2023", main="2023 trend")
-abline(0,1, col="red")
 
 # Difference
 trend3 <- plot(fcover_difference, lai_difference, xlab="FCOVER difference", ylab="LAI difference", main="Difference trend")
