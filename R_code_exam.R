@@ -1,362 +1,453 @@
 #Telerilevamento geo-ecologico 2023/2024
 #Alessandra Valenti Martinez
 
-#The goal of this project is to observed how the vegetation cover changed before and after the fire disturbance
-# occured in the hinterland of Sicily in the period 2017-2023
+#The goal of this project is to observed how the vegetation cover changed before and after the volcanic eruption 
+#occured in the Santa Cruz de la Palma Island in 2021
 
-install.packages("sf")
- 
 
 # First of all, we open the packages from our library:
-
-library(sp)
+library(ncdf4) #for reading RasterLayer variables #si
+library(raster) #needed for work with raster file
+library(ggplot2) #needed for create graphics
+library(RStoolbox) #needed for remote sensing image processing
+library(viridis) #needed for plot the color palette
+library(patchwork) #needed for multiframe graphics
+library(sp) #for work with geospatial data
 library(sf)
-library(raster)
-library(tidyverse)
-library(viridis)
+library(tidyverse) #si
+library(tidyterra) #si
+library(terra) #analysis of raster and vector spatial data #si
+library(patchwork)
 
 
- # Now we set our working directory:
- 
- setwd("C:/lab/Esame")
- 
- 
- 
- img_list <- list.files(pattern = "20170707T095031")
- img_list
+# Now we set our working directory:
 
- import <- lapply(img_list, raster)  # to apply a function to many images of a list
- import
- 
- # Stack vectors from a dataframe or list
- img_2017_raw <- stack(import)
- img_2017_raw  # 4 layers
- # stacking vectors concatenates multiple vectors into a single vector
- 
- plot(img_2017_raw)  # now we have all the images in a single element
- 
- # Plot with RGB in a multiframe
- par(mfrow = c(1,2)) # multiframe
- plotRGB(img_2017_raw, 4, 3, 2, stretch = "Lin") # NIR
- plotRGB(img_2017_raw, 3, 2, 1, stretch = "Lin") # natural colours
- 
- dev.off()
- 
- # Find the right coordinates to crop all the images of Sicily
- plot(img_2017_raw[[3]])
- img_2017_raw
- 
- ext <- c(399960, 509760, 4108000, 4200000) # coordinates for cropping
- # Let's crop the image based on the chosen coordinates
- img_2017 <- crop(img_2017_raw, ext)
- img_2017
- 
-plot(img_2017) 
-
-# Plot with RGB the cropped image
-par(mfrow = c(1,2))
-plotRGB(img_2017, 4, 3, 2, stretch = "Lin") # NIR
-plotRGB(img_2017, 3, 2, 1, stretch = "Lin") # natural colours
+setwd("C:/lab/Esame")
 
 
-## Other images: 2018-2023 -----
+########################################################################
+# NDVI 
+#Calculate NDVI
+#is an indicator of the greenness of the biomes
+#NDVI = (REF_nir – REF_red)/(REF_nir + REF_red)
+#where REF_nir and REF_red are the spectral reflectances 
+#measured in the near infrared and red wavebands respectively
+# We get the data from Copernicus
 
-# List of files
-img_list_18 <- list.files(pattern = "20180707T095029")
-img_list_19 <- list.files(pattern = "20190707T095031")
-img_list_20 <- list.files(pattern = "20200701T095031")
-img_list_21 <- list.files(pattern = "20210706T095031")
-img_list_22 <- list.files(pattern = "20220706T095039")
-img_list_23 <- list.files(pattern = "20230706T095031")
+ndvi2020 <- rast("ndvi2020.nc")
+ndvi2021 <- rast("ndvi2021.nc")
+ndvi2022 <- rast("ndvi2022.nc")
+ndvi2023 <- rast("ndvi2023.nc")
+
+
+# Now let's crop the data to only look at our area
+new_ext <- c (-18.0106, -17.7140, 28.4404, 28.8565)
+ndvi2020_newext <- crop(ndvi2020, new_ext)
+ndvi2021_newext <- crop(ndvi2021, new_ext)
+ndvi2022_newext <- crop(ndvi2022, new_ext)
+ndvi2023_newext <- crop(ndvi2023, new_ext)
+
+#Let's take a look at our data:
+ndvi2020_newext
+ndvi2021_newext
+ndvi2022_newext
+ndvi2023_newext
+
+
+
+### Now let's plot the graphs
+
+##2020
+ndvi2020_gg <- ggplot() + 
+  geom_raster(ndvi2020_newext, mapping = aes(x=x,  y = y, fill = NDVI)) +
+  scale_fill_viridis(option = "magma") +
+  ggtitle("2020 NDVI")
+
+
+#Let's add the legend
+ndvi2020_gg <- ndvi2020_gg + labs(fill= "NDVI")
+ndvi2020_gg
+
+#Let's save the new plot
+ggsave(filename = "ndvi2020.png", plot = ndvi2020_gg)
+
+
+##2021
+ndvi2021_gg <- ggplot() + 
+  geom_raster(ndvi2021_newext, mapping = aes(x=x,  y = y, fill = NDVI)) +
+  scale_fill_viridis(option = "magma") +
+  ggtitle("2021 NDVI")
+
+
+#Let's add the legend
+ndvi2021_gg <- ndvi2021_gg + labs(fill= "NDVI")
+ndvi2021_gg
+
+#Let's save the new plot
+ggsave(filename = "ndvi2021.png", plot = ndvi2021_gg)
+
+##2022
+ndvi2022_gg <- ggplot() + 
+  geom_raster(ndvi2022_newext, mapping = aes(x=x,  y = y, fill = NDVI)) +
+  scale_fill_viridis(option = "magma") +
+  ggtitle("2022 NDVI")
+
+
+#Let's add the legend
+ndvi2022_gg <- ndvi2022_gg + labs(fill= "NDVI")
+ndvi2022_gg
+
+#Let's save the new plot
+ggsave(filename = "ndvi2022.png", plot = ndvi2022_gg)
+
+
+##2023
+ndvi2023_gg <- ggplot() + 
+  geom_raster(ndvi2023_newext, mapping = aes(x=x,  y = y, fill = NDVI)) +
+  scale_fill_viridis(option = "magma") +
+  ggtitle("2023 NDVI")
+
+
+#Let's add the legend
+ndvi2023_gg <- ndvi2023_gg + labs(fill= "NDVI")
+ndvi2023_gg
+
+#Let's save the new plot
+ggsave(filename = "ndvi2023.png", plot = ndvi2023_gg)
+
+
+# Now let's look at all the plots together to compare them
+NDVIcomparison <- ndvi2020_gg + ndvi2021_gg + ndvi2022_gg + ndvi2023_gg
+print(NDVIcomparison)
+ggsave(filename = "NDVIcomparison.png" , plot = NDVIcomparison)
+
+
+
+########
+
+#List of files
+rlist <- list.files(pattern ="ndvi") #make a list of the files that start with "ndvi"
+rlist 
 
 
 # Apply a function over a list or vector
-import_18 <- lapply(img_list_18, raster)
-import_19 <- lapply(img_list_19, raster)
-import_20 <- lapply(img_list_20, raster)
-import_21 <- lapply(img_list_21, raster)
-import_22 <- lapply(img_list_22, raster)
-import_23 <- lapply(img_list_23, raster)
+import <- lapply(rlist, raster) # specify the list and the function to import the data
+import 
 
-# Stack vectors from a dataframe or list
-img_2018_raw <- stack(import_18)
-img_2019_raw <- stack(import_19)
-img_2020_raw <- stack(import_20)
-img_2021_raw <- stack(import_21)
-img_2022_raw <- stack(import_22)
-img_2023_raw <- stack(import_23)
+# Let's stack the data, all the four layers in a single file:
+ndvistacked <- stack(import)
 
-# Let's crop the image based on the coordinates chosen previously
-img_2018 <- crop(img_2018_raw, ext)
-img_2019 <- crop(img_2019_raw, ext)
-img_2020 <- crop(img_2020_raw, ext)
-img_2021 <- crop(img_2021_raw, ext)
-img_2022 <- crop(img_2022_raw, ext)
-img_2023 <- crop(img_2023_raw, ext)
+lapalma_ndvistacked <- crop(ndvistacked, new_ext)
+lapalma_ndvistacked
 
-# Plot with RGB the cropped images
+# Now let's look at the difference between the NDVI in 2020 and in 2023
 
-plotRGB(img_2018, 4, 3, 2, stretch = "Lin") # NIR
-plotRGB(img_2018, 3, 2, 1, stretch = "Lin") # natural colours
+ndvidifference2023_raw <- lapalma_ndvistacked[[4]]-lapalma_ndvistacked[[1]]
 
-plotRGB(img_2019, 4, 3, 2, stretch = "Lin") # NIR
-plotRGB(img_2019, 3, 2, 1, stretch = "Lin") # natural colours
+# Set all values that equal zero to NA
+ndvidifference2023_ <- ndvidifference2023_raw; ndvidifference2023_[ndvidifference2023_ == 0] <- NA 
+ndvidifference2023 <- as.data.frame(ndvidifference2023_, xy=TRUE)
 
-plotRGB(img_2020, 4, 3, 2, stretch = "Lin") # NIR
-plotRGB(img_2020, 3, 2, 1, stretch = "Lin") # natural colours
 
-plotRGB(img_2021, 4, 3, 2, stretch = "Lin") # NIR
-plotRGB(img_2021, 3, 2, 1, stretch = "Lin") # natural colours
+ndvidifference2023_plot <-ggplot() + 
+  geom_raster(ndvidifference2023, mapping = aes(x=x,  y = y, fill = layer)) +
+  scale_fill_viridis(option = "rocket") +
+  ggtitle("NDVI difference between 2020 2023")
 
-plotRGB(img_2022, 4, 3, 2, stretch = "Lin") # NIR
-plotRGB(img_2022, 3, 2, 1, stretch = "Lin") # natural colours
+ndvidifference2023_plot
 
-plotRGB(img_2023, 4, 3, 2, stretch = "Lin") # NIR
-plotRGB(img_2023, 3, 2, 1, stretch = "Lin") # natural colours
+ggsave(filename = "NDVI_difference2023.png", plot = ndvidifference2023_plot)
 
-dev.off()
 
-# The most cloudy images -> 2015 and 2017
+# Now let's look at the difference between the NDVI in 2021 and in 2022
+ndvidifference2122_raw <- lapalma_ndvistacked[[3]]-lapalma_ndvistacked[[2]]
 
+# Set all values that equal zero to NA
+ndvidifference2122_ <- ndvidifference2122_raw; ndvidifference2122[ndvidifference2122 == 0] <- NA 
+ndvidifference2122 <- as.data.frame(ndvidifference2122_, xy=TRUE)
 
+#Let's plot the difference
+ndvidifference2122_plot <- ggplot() + 
+  geom_raster(ndvidifference2122, mapping = aes(x=x,  y = y, fill = layer)) +
+  scale_fill_viridis(option = "rocket") +
+  ggtitle("NDVI difference between 2021 2022")
 
-# NDVI -----
+ndvidifference2122_plot
 
-# Calculate NDVI
-# NDVI is a metric for quantifying the health and density of vegetation
-# range from -1 to +1
+ggsave(filename = "NDVI_difference2122.png", plot = ndvidifference2122_plot)
 
-ndvi_2017 = (img_2017[[4]] - img_2017[[3]]) / (img_2017[[4]] + img_2017[[3]])
-ndvi_2018 = (img_2018[[4]] - img_2018[[3]]) / (img_2018[[4]] + img_2018[[3]])
-ndvi_2019 = (img_2019[[4]] - img_2019[[3]]) / (img_2019[[4]] + img_2019[[3]])
-ndvi_2020 = (img_2020[[4]] - img_2020[[3]]) / (img_2020[[4]] + img_2020[[3]])
-ndvi_2021 = (img_2021[[4]] - img_2021[[3]]) / (img_2021[[4]] + img_2021[[3]])
-ndvi_2022 = (img_2022[[4]] - img_2022[[3]]) / (img_2022[[4]] + img_2022[[3]])
-ndvi_2023 = (img_2023[[4]] - img_2023[[3]]) / (img_2023[[4]] + img_2023[[3]])
 
-# Plot the NDVI
-par(mfrow = c(3, 3))
-clp1 <- colorRampPalette(c("darkblue", "white", "darkgreen", "black"))(100)
 
+########################################################################
+# FCOVER
 
-plot(ndvi_2017, col = clp1, main = "2017")
-plot(ndvi_2018, col = clp1, main = "2018")
-plot(ndvi_2019, col = clp1, main = "2019")
-plot(ndvi_2020, col = clp1, main = "2020")
-plot(ndvi_2021, col = clp1, main = "2021")
-plot(ndvi_2022, col = clp1, main = "2022")
-plot(ndvi_2023, col = clp1, main = "2023")
+# Calculate FCOVER
+# FCOVER is a metric for quantifying the fraction of vegetation of an area
+# range from 0 to +1
+# We get the data from Copernicus
 
-dev.off()
+fcover2020 <- rast ("fcover2020.nc")
+fcover2021 <- rast ("fcover2021.nc")
+fcover2022 <- rast ("fcover2022.nc")
+fcover2023 <- rast ("fcover2023.nc")
 
-# Temporal difference 2015-2023
-ndvi_dif1 = ndvi_2017 - ndvi_2023
 
-# Plot the results of multitemporal analysis
-clp2 <- magma(100)
-plot(ndvi_dif1, col = clp2, main = "NDVI difference 2017-2023")
-# the higher the difference the bigger the loss of vegetation
-# if the difference is negative there is a gain in vegetation
-# we mainly care about the loss and gain of forest cover
+# Now let's crop the data to only look at our area
+new_ext <- c (-18.0106, -17.7140, 28.4404, 28.8565)
+fcover2020_newext <- crop(fcover2020, new_ext)
+fcover2021_newext <- crop(fcover2021, new_ext)
+fcover2022_newext <- crop(fcover2022, new_ext)
+fcover2023_newext <- crop(fcover2023, new_ext)
 
-# It seems the NDVI has an overall decrease from 2015 to 2023
 
-dev.off()
 
 
 
-# Multivariate analysis -----
+### Now let's plot the graphs for each years
 
-# PCA (Principal Component Analysis) on a sample of pixels (same as for classification)
-sample <- sampleRandom(ndvi_dif1, 10000)
-pca <- prcomp(sample)
+##2020
+fcover2020_gg <- ggplot() + 
+  geom_raster(fcover2020_newext, mapping = aes(x=x,  y = y, fill = FCOVER)) +
+  scale_fill_viridis(option = "magma") +
+  ggtitle("2020 fcover")
 
-# Variance explained
-summary(pca)
-
-# The first component is the one with the highest variability
-
-# Correlation with original bands
-pca
-
-# Pc map: we visualize starting from the analysis of the PCA
-pci <- predict(ndvi_dif1, pca, index = c(1:3)) # or c(1:2)
-plot(pci)
-plot(pci[[1]])
-
-# Plot using ggplot
-pcid <- as.data.frame(pci[[1]], xy = T)  # coerce into a dataframe
-pcid
-
-ggplot() +
-        geom_raster(pcid,
-                    mapping = aes(x = x, y = y, fill = layer.1)) +
-        scale_fill_viridis(name = "PC1 values") +
-        labs(title = "PCA of NDVI difference 2015-2023")
-
-setwd("C:/lab/exam_project/images")
-
-ggsave("pca1.png")
-
-dev.off()
-
-
-
-# Land cover -----
-
-## Classification -----
-
-# 1. Get values
-values_2017 <- getValues(img_2017)
-values_2018 <- getValues(img_2018)
-values_2019 <- getValues(img_2019)
-values_2020 <- getValues(img_2020)
-values_2021 <- getValues(img_2021)
-values_2022 <- getValues(img_2022)
-values_2023 <- getValues(img_2023)
-
-# 2. Classify
-kcluster_2017 <- kmeans(values_2017, centers = 3)
-kcluster_2018 <- kmeans(values_2018, centers = 3)
-kcluster_2019 <- kmeans(values_2019, centers = 3)
-kcluster_2020 <- kmeans(values_2020, centers = 3)
-kcluster_2021 <- kmeans(values_2021, centers = 3)
-kcluster_2022 <- kmeans(values_2022, centers = 3)
-kcluster_2023 <- kmeans(values_2023, centers = 3)
-
-# 3. Set values
-class_2017 <- setValues(img_2017[[3]], kcluster_2017$cluster)
-class_2018 <- setValues(img_2018[[3]], kcluster_2018$cluster)
-class_2019 <- setValues(img_2019[[3]], kcluster_2019$cluster)
-class_2020 <- setValues(img_2020[[3]], kcluster_2020$cluster)
-class_2021 <- setValues(img_2021[[3]], kcluster_2021$cluster)
-class_2022 <- setValues(img_2022[[3]], kcluster_2022$cluster)
-class_2023 <- setValues(img_2023[[3]], kcluster_2023$cluster)
-
-## Plots -----
-clp3 <- colorRampPalette(c("blue", "white","orange"))(3)
-par(mfrow = c(3,3))
-plot(class_2017, col = clp3, main = "2017")
-plot(class_2018, col = clp3, main = "2018")
-plot(class_2019, col = clp3, main = "2019")
-plot(class_2020, col = clp3, main = "2020")
-plot(class_2021, col = clp3, main = "2021")
-plot(class_2022, col = clp3, main = "2022")
-plot(class_2023, col = clp3, main = "2023")
-
-# class 1: bare soil, urban areas, absence of vegetation
-# class 2: low vegetation, cultivated areas with vegetation
-# class 3: forest, tree-covered land
-
-# The colours of the classes can differ from one plot to another, they have to be fitted
-
-dev.off()
-
-
-## Percentages -----
-
-# Create an empty data frame to store results
-results <- data.frame(RasterName = character(0),
-                      Class1_Frequency = numeric(0),
-                      Class2_Frequency = numeric(0),
-                      Class3_Frequency = numeric(0),
-                      Class1_Percentage = numeric(0),
-                      Class2_Percentage = numeric(0),
-                      Class3_Percentage = numeric(0))
-
-# Create a list that contains the values of each class
-classes <- list(class_2017, class_2018, class_2019,
-                class_2020, class_2021, class_2022, class_2023)
-
-# Iterate through your raster objects
-for (i in 1:length(classes)) {
-        # Get the raster object
-        raster_obj <- classes[[i]]
-        
-        # Get the pixel values
-        values <- getValues(raster_obj)
-        
-        # Calculate frequencies
-        class1_freq <- sum(values == 1)  # Assuming class 1 is represented by value 1
-        class2_freq <- sum(values == 2)  # Assuming class 2 is represented by value 2
-        class3_freq <- sum(values == 3)  # Assuming class 3 is represented by value 3
-        
-        # Calculate percentages
-        total_pixels <- length(values)
-        class1_percentage <- round((class1_freq / total_pixels) * 100, 1)
-        class2_percentage <- round((class2_freq / total_pixels) * 100, 1)
-        class3_percentage <- round((class3_freq / total_pixels) * 100, 1)
-        
-        # Store the results
-        results <- rbind(results, data.frame(RasterName = names(raster_obj),
-                                             Class1_Frequency = class1_freq,
-                                             Class2_Frequency = class2_freq,
-                                             Class3_Frequency = class3_freq,
-                                             Class1_Percentage = class1_percentage,
-                                             Class2_Percentage = class2_percentage,
-                                             Class3_Percentage = class3_percentage))
-}
-
-# Print or use the results as needed
-print(results)
-
-# Look at the images to assign the values to the right classes
-# Then save them in a dataframe to do some plots
-
-# Create the dataframe with the results for each class
-classes <- data.frame(
-        year = c(2017, 2018, 2019, 2020, 2021, 2022, 2023),
-        bare_soil = c(14.9, 16.9, 15.0, 17.4, 9.7, 18.9, 11.5, 14.6, 11.4),#da vedere
-        low_vegetation = c(42.2, 37.8, 39.9, 28.7, 40.0, 35.2, 35.0, 38.6, 27.7),
-        forest = c(42.9, 45.3, 45.1, 53.9, 50.3, 45.9, 53.5, 46.8, 60.8))
-classes <- gather(classes, class, percentage, -year)
-classes
-
-
-## Results -----
-
-# Plot about classes
-classes$class <- reorder(classes$class, classes$percentage)
-
-classes %>%
-        ggplot(aes(x = year, y = percentage, fill = class)) +
-        geom_bar(stat = "identity", position = "dodge") +
-        labs(title = "Land Cover in Białowieża Forest by Year",
-             x = "Year",
-             y = "Percentage") +
-        scale_fill_manual(values = c("gold2", "turquoise3", "darkgreen"),
-                          name = "Class",
-                          labels = c("bare soil", "low vegetation", "forest")) +
-        theme_classic()
-ggsave("plot_bar.png", width = 2000, height = 1350, units = "px")
-
-classes %>%
-        ggplot(aes(x = year, y = percentage, color = class)) +
-        geom_line(linewidth = 2) +
-        labs(title = "Land Cover in Białowieża Forest by Year",
-             x = "Year",
-             y = "Percentage") +
-        scale_color_manual(values = c("gold2", "turquoise3", "darkgreen"),
-                           name = "Class",
-                           labels = c("bare soil", "low vegetation", "forest")) +
-        theme_classic()
-ggsave("plot_line.png", width = 2000, height = 1350, units = "px")
-
-
-classes %>%
-        ggplot(aes(x = year, y = percentage, color = class)) +
-        geom_point(size = 3) +
-        geom_smooth(method = "lm", aes(fill = class), linewidth = 1.5) +
-        labs(title = "Land Cover in Białowieża Forest by Year",
-             x = "Year",
-             y = "Percentage") +
-        scale_color_manual(values = c("gold2", "turquoise3", "darkgreen"),
-                           name = "Class",
-                           labels = c("bare soil", "low vegetation", "forest")) +
-        scale_fill_manual(values = c("gold2", "turquoise3", "darkgreen"),
-                          name = "Class",
-                          labels = c("bare soil", "low vegetation", "forest")) +
-        theme_classic()
-ggsave("plot_scatter.png", width = 2000, height = 1350, units = "px")
-
-# 
+
+#Let's add the legend
+fcover2020_gg <- fcover2020_gg + labs(fill= "fcover")
+fcover2020_gg
+
+#Let's save the new plot
+ggsave(filename = "FCOVER2020.png", plot = fcover2020_gg)
+
+
+##2021
+fcover2021_gg <- ggplot() + 
+  geom_raster(fcover2021_newext, mapping = aes(x=x,  y = y, fill = FCOVER)) +
+  scale_fill_viridis(option = "magma") +
+  ggtitle("2021 fcover") 
+
+#Let's add the legend
+fcover2021_gg <- fcover2021_gg + labs(fill= "fcover")
+fcover2021_gg
+
+#Let's save the new plot
+ggsave(filename = "FCOVER2021.png", plot = fcover2021_gg)
+
+##2022
+fcover2022_gg <- ggplot() + 
+  geom_raster(fcover2022_newext, mapping = aes(x=x,  y = y, fill = FCOVER)) +
+  scale_fill_viridis(option = "magma") +
+  ggtitle("2022 fcover")
+
+#Let's add the legend
+fcover2022_gg <- fcover2022_gg + labs(fill= "fcover")
+fcover2022_gg
+
+#Let's save the new plot
+ggsave(filename = "FCOVER2022.png", plot = fcover2022_gg)
+
+##2023
+fcover2023_gg <- ggplot() + 
+  geom_raster(fcover2023_newext, mapping = aes(x=x,  y = y, fill = FCOVER)) +
+  scale_fill_viridis(option = "magma") +
+  ggtitle("2023 fcover")
+
+#Let's add the legend
+fcover2023_gg <- fcover2023_gg + labs(fill= "fcover")
+fcover2023_gg
+
+#Let's save the new plot
+ggsave(filename = "FCOVER2023.png", plot = fcover2023_gg)
+
+
+
+
+# Now let's look at all the plots together to compare them
+fcover_comparison <- fcover2020_gg + fcover2021_gg + fcover2022_gg + fcover2023_gg
+fcover_comparison
+
+ggsave(filename = "FCOVER_comparison.png", plot = fcover_comparison)
+
+
+
+
+########
+
+# List of files
+rlist <- list.files(pattern= "fcover")
+rlist 
+
+# Apply a function over a list or vector
+import <- lapply(rlist, raster)
+import
+
+
+# Let's stack the data:
+fcoverstacked <- stack(import)
+fcoverstacked
+
+#Let's crop the data
+fcoverstacked_newext <- crop(fcoverstacked, new_ext)
+fcoverstacked_newext
+
+
+#Now let's look at the difference between 2023 and 2020
+fcover_difference2320 <- fcoverstacked_newext[[4]]-fcoverstacked_newext[[1]]
+fcover_difference2320_df <- as.data.frame(fcover_difference, xy = TRUE)
+
+fcoverdifference2320_plot <- ggplot() + 
+  geom_raster(fcover_difference2320_df, mapping = aes(x=x,  y = y, fill = layer)) +
+  scale_fill_viridis(option = "magma") +
+  ggtitle("Difference in Fraction of Green Vegetation Cover 2020 2023") 
+
+fcoverdifference2320_plot
+
+ggsave(filename = "FCOVER_difference2320.png", plot = fcoverdifference2320_plot)
+
+
+#Now let's look at the difference between 2021 and 2022
+fcover_difference2122 <- fcoverstacked_newext[[3]]-fcoverstacked_newext[[2]]
+fcover_difference2122_df <- as.data.frame(fcover_difference2122, xy = TRUE)
+
+fcoverdifference2122_plot <- ggplot() + 
+  geom_raster(fcover_difference2320_df, mapping = aes(x=x,  y = y, fill = layer)) +
+  scale_fill_viridis(option = "magma") +
+  ggtitle("Difference in Fraction of Green Vegetation Cover 2021 2022") 
+
+fcoverdifference2122_plot
+
+ggsave(filename = "FCOVER_difference2122.png", plot = fcoverdifference2122_plot)
+
+
+
+####################################################################
+
+# Now let's do the same for the LAI
+# Calculate LAI
+# LAI is a metric for quantifying the leaf area index of an area
+# range from 0 to +∞
+# We get the data from Copernicus
+
+lai_2020 <- rast ("lai_2020.nc")
+lai_2021 <- rast ("lai_2021.nc")
+lai_2022 <- rast ("lai_2022.nc")
+lai_2023 <- rast ("lai_2023.nc")
+
+# Now let's crop the data to only look at our area
+new_ext <- c (-18.0106, -17.7140, 28.4404, 28.8565)
+lai_2020_newext <- crop(lai_2020, new_ext)
+lai_2021_newext <- crop(lai_2021, new_ext)
+lai_2022_newext <- crop(lai_2022, new_ext)
+lai_2023_newext <- crop(lai_2023, new_ext)
+
+
+### Now let's plot the graphs
+
+##2020
+lai_2020_gg <- ggplot() + 
+  geom_raster(lai_2020_newext, mapping = aes(x=x,  y = y, fill = LAI )) +
+  scale_fill_viridis(option = "magma") +
+  ggtitle("2020 LAI") 
+
+
+# Let's add the legend
+lai_2020_gg <- lai_2020_gg + labs(fill= "LAI")
+lai_2020_gg
+
+# Let's save the new plot
+ggsave(filename = "LAI_2020.png", plot = lai_2020_gg)
+
+
+##2021
+lai_2021_gg <- ggplot() + 
+  geom_raster(lai_2021_newext, mapping = aes(x=x,  y = y, fill = LAI )) +
+  scale_fill_viridis(option = "magma") +
+  ggtitle("2021 LAI") 
+
+# Let's add the legend
+lai_2021_gg <- lai_2021_gg + labs(fill= "LAI")
+lai_2021_gg
+
+# Let's save the new plot
+ggsave(filename = "LAI_2021.png", plot = lai_2021_gg)
+
+##2022
+lai_2022_gg <- ggplot() + 
+  geom_raster(lai_2022_newext, mapping = aes(x=x,  y = y, fill = LAI )) +
+  scale_fill_viridis(option = "magma") +
+  ggtitle("2022 LAI") 
+
+# Let's add the legend
+lai_2022_gg <- lai_2022_gg + labs(fill= "LAI")
+lai_2022_gg
+
+# Let's save the new plot
+ggsave(filename = "LAI_2022.png", plot = lai_2022_gg)
+
+#2023
+lai_2023_gg <- ggplot() + 
+  geom_raster(lai_2023_newext, mapping = aes(x=x,  y = y, fill = LAI )) +
+  scale_fill_viridis(option = "magma") +
+  ggtitle("2023 LAI") 
+
+# Let's add the legend
+lai_2023_gg <- lai_2023_gg + labs(fill= "LAI")
+lai_2023_gg
+
+# Let's save the new plot
+ggsave(filename = "LAI_2023.png", plot = lai_2023_gg)
+
+
+
+
+# Now let's look at all the plots together to compare them
+lai_comparison <- lai_2020_gg + lai_2021_gg + lai_2022_gg + lai_2023_gg
+lai_comparison
+
+ggsave(filename = "LAI_comparison.png", plot = lai_comparison)
+
+
+
+
+########
+# List of files
+rlist <- list.files(pattern= "lai_2")
+rlist 
+
+# Apply a function over a list or vector
+import <- lapply(rlist, raster)
+import
+
+# Let's stack the data:
+laistacked <- stack(import)
+laistacked
+
+# Let's crop the data
+laistacked_newext <- crop(laistacked, new_ext)
+laistacked_newext
+
+
+# Now let's look at the difference between 2023 and 2020
+lai_difference2320 <- laistacked_newext[[4]]-laistacked_newext[[1]]
+laidifference2320_df <-  as.data.frame(lai_difference2320, xy = TRUE)
+
+laidifference2320_plot <- ggplot() + 
+  geom_raster(laidifference2320_df, mapping = aes(x=x,  y = y, fill = layer)) +
+  scale_fill_viridis(option = "rocket") +
+  ggtitle("LAI difference 2020 2023")
+
+laidifference2320_plot
+ggsave(filename = "LAI_difference2320.png", plot = laidifference2320_plot)
+
+
+# Now let's look at the difference between 2021 and 2022
+lai_difference2122 <- laistacked_newext[[3]]-laistacked_newext[[2]]
+laidifference2122_df <-  as.data.frame(lai_difference2122, xy = TRUE)
+
+laidifference2122_plot <- ggplot() + 
+  geom_raster(laidifference2122_df, mapping = aes(x=x,  y = y, fill = layer)) +
+  scale_fill_viridis(option = "rocket") +
+  ggtitle("LAI difference 2021 2022")
+
+laidifference2122_plot
+ggsave(filename = "LAI_difference2122.png", plot = laidifference2122_plot)
