@@ -1,3 +1,11 @@
+library(terra) #creating, reading, manipulating, and writing raster data
+library (raster) #creating, reading, manipulating, and writing raster data
+library (ggplot2) #for data visualization
+library (RStoolbox) #toolbox for remote sensing image processing and analysis
+library (viridis) #Colorblind-Friendly Color Maps for R 
+library(dplyr) #tool for working with data frame
+
+
 #Telerilevamento geo-ecologico 2023/2024
 #Alessandra Valenti Martinez
 
@@ -451,3 +459,5 @@ laidifference2122_plot <- ggplot() +
 
 laidifference2122_plot
 ggsave(filename = "LAI_difference2122.png", plot = laidifference2122_plot)
+
+
