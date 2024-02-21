@@ -6,8 +6,8 @@
 
 
 # First of all, we open the packages from our library:
-library(raster) #needed for work with raster file
-library(tidyverse) #
+library(raster) #creating, reading, manipulating, and writing raster data
+library(ggplot2) #data visualization
 library(tidyterra) #interface between terra and tidyverse 
 library(terra) #creating, reading, manipulating, and writing raster data
 library(patchwork) #needed for multiframe graphics
@@ -445,5 +445,3 @@ laidifference2122_plot <- ggplot() +
 
 laidifference2122_plot
 ggsave(filename = "LAI_difference2122.png", plot = laidifference2122_plot)
-
-
