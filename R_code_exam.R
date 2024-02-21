@@ -8,7 +8,7 @@
 # First of all, we open the packages from our library:
 library(raster) #creating, reading, manipulating, and writing raster data
 library(ggplot2) #data visualization
-library(tidyterra) #interface between terra and tidyverse 
+library(tidyterra) #interface between terra and ggplot2
 library(terra) #creating, reading, manipulating, and writing raster data
 library(patchwork) #needed for multiframe graphics
 library(viridis) #needed for plot the color palette
