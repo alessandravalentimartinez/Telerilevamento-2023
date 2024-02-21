@@ -123,7 +123,7 @@ ggsave(filename = "NDVIcomparison.png" , plot = NDVIcomparison)
 ########
 
 #List of files
-rlist <- list.files(pattern = "ndvi") #make a list of the files that start with "ndvi"
+rlist <- list.files(pattern = "ndvi") 
 rlist 
 
 
@@ -131,7 +131,7 @@ rlist
 import <- lapply(rlist, raster) 
 import 
 
-# Let's stack the data, all the four layers in a single file:
+# Let's stack the data
 ndvistacked <- stack(import)
 
 #Let's crop the data
@@ -164,7 +164,7 @@ ndvidifference2023_raw <- lapalma_ndvistacked[[4]] - lapalma_ndvistacked[[1]]
 ndvidifference2023_ <- ndvidifference2023_raw; ndvidifference2023_[ndvidifference2023_ == 0] <- NA 
 ndvidifference2023 <- as.data.frame(ndvidifference2023_, xy = TRUE)
 
-
+#Let's plot the difference
 ndvidifference2023_plot <- ggplot() + 
   geom_raster(ndvidifference2023, mapping = aes(x = x,  y = y, fill = layer)) +
   scale_fill_viridis(option = "rocket") +
@@ -197,7 +197,6 @@ fcover2020_newext <- crop(fcover2020, new_ext)
 fcover2021_newext <- crop(fcover2021, new_ext)
 fcover2022_newext <- crop(fcover2022, new_ext)
 fcover2023_newext <- crop(fcover2023, new_ext)
-
 
 
 
@@ -276,10 +275,10 @@ ggsave(filename = "FCOVER_comparison.png", plot = fcover_comparison)
 rlist <- list.files(pattern = "fcover")
 rlist 
 
+
 # Apply a function over a list or vector
 import <- lapply(rlist, raster)
 import
-
 
 # Let's stack the data:
 fcoverstacked <- stack(import)
@@ -305,11 +304,11 @@ fcoverdifference2122_plot
 ggsave(filename = "FCOVER_difference2122.png", plot = fcoverdifference2122_plot)
 
 
-
 #Now let's look at the difference between 2023 and 2020
 fcover_difference2320 <- fcoverstacked_newext[[4]] - fcoverstacked_newext[[1]]
 fcover_difference2320_df <- as.data.frame(fcover_difference2320, xy = TRUE)
 
+#Let's plot the difference
 fcoverdifference2320_plot <- ggplot() + 
   geom_raster(fcover_difference2320_df, mapping = aes(x = x,  y = y, fill = layer)) +
   scale_fill_viridis(option = "magma") +
@@ -318,6 +317,7 @@ fcoverdifference2320_plot <- ggplot() +
 fcoverdifference2320_plot
 
 ggsave(filename = "FCOVER_difference2320.png", plot = fcoverdifference2320_plot)
+
 
 
 
@@ -342,7 +342,9 @@ lai_2022_newext <- crop(lai_2022, new_ext)
 lai_2023_newext <- crop(lai_2023, new_ext)
 
 
-### Now let's plot the graphs
+
+
+### Now let's plot the graphs for each years
 
 ##2020
 lai_2020_gg <- ggplot() + 
@@ -372,6 +374,7 @@ lai_2021_gg
 # Let's save the new plot
 ggsave(filename = "LAI_2021.png", plot = lai_2021_gg)
 
+
 ##2022
 lai_2022_gg <- ggplot() + 
   geom_raster(lai_2022_newext, mapping = aes(x = x,  y = y, fill = LAI )) +
@@ -384,6 +387,7 @@ lai_2022_gg
 
 # Let's save the new plot
 ggsave(filename = "LAI_2022.png", plot = lai_2022_gg)
+
 
 #2023
 lai_2023_gg <- ggplot() + 
@@ -411,6 +415,7 @@ ggsave(filename = "LAI_comparison.png", plot = lai_comparison)
 
 
 ########
+
 # List of files
 rlist <- list.files(pattern = "lai_2")
 rlist 
@@ -419,7 +424,7 @@ rlist
 import <- lapply(rlist, raster)
 import
 
-# Let's stack the data:
+# Let's stack the data
 laistacked <- stack(import)
 laistacked
 
@@ -432,24 +437,29 @@ laistacked_newext
 lai_difference2122 <- laistacked_newext[[3]] - laistacked_newext[[2]]
 laidifference2122_df <- as.data.frame(lai_difference2122, xy = TRUE)
 
+#Let's plot the difference
 laidifference2122_plot <- ggplot() + 
   geom_raster(laidifference2122_df, mapping = aes(x = x,  y = y, fill = layer)) +
   scale_fill_viridis(option = "rocket") +
   ggtitle("LAI difference 2021 2022")
 
 laidifference2122_plot
+
 ggsave(filename = "LAI_difference2122.png", plot = laidifference2122_plot)
+
 
 
 # Now let's look at the difference between 2023 and 2020
 lai_difference2320 <- laistacked_newext[[4]] - laistacked_newext[[1]]
 laidifference2320_df <- as.data.frame(lai_difference2320, xy = TRUE)
 
+#Let's plot the difference
 laidifference2320_plot <- ggplot() + 
   geom_raster(laidifference2320_df, mapping = aes(x = x,  y = y, fill = layer)) +
   scale_fill_viridis(option = "rocket") +
   ggtitle("LAI difference 2020 2023")
 
 laidifference2320_plot
+
 ggsave(filename = "LAI_difference2320.png", plot = laidifference2320_plot)
 
