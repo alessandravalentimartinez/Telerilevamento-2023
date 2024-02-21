@@ -1,31 +1,17 @@
-library(terra) #creating, reading, manipulating, and writing raster data
-library (raster) #creating, reading, manipulating, and writing raster data
-library (ggplot2) #for data visualization
-library (RStoolbox) #toolbox for remote sensing image processing and analysis
-library (viridis) #Colorblind-Friendly Color Maps for R 
-library(dplyr) #tool for working with data frame
-
-
 #Telerilevamento geo-ecologico 2023/2024
 #Alessandra Valenti Martinez
 
-#The goal of this project is to observed how the vegetation cover changed before and after the volcanic eruption 
-#occured in the Santa Cruz de la Palma Island in 2021
+#The goal of this project is to assess the vegetation condition on La Palma Island
+# considering the volcanic eruption occured in 2021
 
 
 # First of all, we open the packages from our library:
-library(ncdf4) #for reading RasterLayer variables #si
 library(raster) #needed for work with raster file
-library(ggplot2) #needed for create graphics
-library(RStoolbox) #needed for remote sensing image processing
-library(viridis) #needed for plot the color palette
+library(tidyverse) #
+library(tidyterra) #interface between terra and tidyverse 
+library(terra) #creating, reading, manipulating, and writing raster data
 library(patchwork) #needed for multiframe graphics
-library(sp) #for work with geospatial data
-library(sf)
-library(tidyverse) #si
-library(tidyterra) #si
-library(terra) #analysis of raster and vector spatial data #si
-library(patchwork)
+library(viridis) #needed for plot the color palette
 
 
 # Now we set our working directory:
@@ -171,7 +157,7 @@ ggsave(filename = "NDVI_difference2023.png", plot = ndvidifference2023_plot)
 ndvidifference2122_raw <- lapalma_ndvistacked[[3]]-lapalma_ndvistacked[[2]]
 
 # Set all values that equal zero to NA
-ndvidifference2122_ <- ndvidifference2122_raw; ndvidifference2122[ndvidifference2122 == 0] <- NA 
+ndvidifference2122_ <- ndvidifference2122_raw; ndvidifference2122_[ndvidifference2122_ == 0] <- NA 
 ndvidifference2122 <- as.data.frame(ndvidifference2122_, xy=TRUE)
 
 #Let's plot the difference
@@ -301,7 +287,7 @@ fcoverstacked_newext
 
 #Now let's look at the difference between 2023 and 2020
 fcover_difference2320 <- fcoverstacked_newext[[4]]-fcoverstacked_newext[[1]]
-fcover_difference2320_df <- as.data.frame(fcover_difference, xy = TRUE)
+fcover_difference2320_df <- as.data.frame(fcover_difference2320, xy = TRUE)
 
 fcoverdifference2320_plot <- ggplot() + 
   geom_raster(fcover_difference2320_df, mapping = aes(x=x,  y = y, fill = layer)) +
@@ -318,7 +304,7 @@ fcover_difference2122 <- fcoverstacked_newext[[3]]-fcoverstacked_newext[[2]]
 fcover_difference2122_df <- as.data.frame(fcover_difference2122, xy = TRUE)
 
 fcoverdifference2122_plot <- ggplot() + 
-  geom_raster(fcover_difference2320_df, mapping = aes(x=x,  y = y, fill = layer)) +
+  geom_raster(fcover_difference2122_df, mapping = aes(x=x,  y = y, fill = layer)) +
   scale_fill_viridis(option = "magma") +
   ggtitle("Difference in Fraction of Green Vegetation Cover 2021 2022") 
 
