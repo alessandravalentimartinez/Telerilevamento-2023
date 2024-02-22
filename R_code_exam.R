@@ -2,7 +2,7 @@
 #Alessandra Valenti Martinez
 
 #The goal of this project is to assess the vegetation condition on La Palma Island
-# considering the volcanic eruption occured in 2021
+#considering the volcanic eruption occured in 2021
 
 
 # First of all, we open the packages from our library:
